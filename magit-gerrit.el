@@ -96,6 +96,11 @@
   :group 'magit-gerrit
   :type 'key-sequence)
 
+(defcustom magit-gerrit-push-review-to-topic t
+  "Set to nil to prevent submitting reviews to topic branches"
+  :group 'magit-gerrit
+  :type 'boolean)
+
 (defun gerrit-command (cmd &rest args)
   (let ((gcmd (concat
 	       "-x -p 29418 "
@@ -430,8 +435,10 @@ Succeed even if branch already exist
 			   (and branch (magit-get "branch" branch "merge"))))
 	   (branch-pub (progn
 			 (string-match (rx "refs/heads" (group (one-or-more any)))
-				       branch-merge)
-			 (format "refs/%s%s/%s" status (match-string 1 branch-merge) branch))))
+				           branch-merge)
+             (if magit-gerrit-push-review-to-topic
+			     (format "refs/%s%s/%s" status (match-string 1 branch-merge) branch)
+			     (format "refs/%s%s" status (match-string 1 branch-merge))))))
 
 
       (when (or (null branch-remote)
